@@ -19,8 +19,8 @@ func main() {
 	window1 := gocv.NewWindow("image 1")
 	window2 := gocv.NewWindow("image 2")
 
-	imgPath1 := "./data/image1-a.jpg"
-	imgPath2 := "./data/image1-b.jpg"
+	imgPath1 := "../data/image1-a.jpg"
+	imgPath2 := "../data/image1-b.jpg"
 	img1 := gocv.IMRead(imgPath1, gocv.IMReadColor)
 	img2 := gocv.IMRead(imgPath2, gocv.IMReadColor)
 	if img1.Empty() {
