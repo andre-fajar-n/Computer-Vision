@@ -10,7 +10,7 @@ import (
 )
 
 var redColor = color.RGBA{R: 255}
-var posX, posY int
+var bx, by, ax, ay int
 
 const minPos = 9.9e+25
 
@@ -18,6 +18,7 @@ func main() {
 	// declare window
 	window1 := gocv.NewWindow("image 1")
 	window2 := gocv.NewWindow("image 2")
+	windowResult := gocv.NewWindow("result")
 
 	imgPath1 := "../data/image1-a.jpg"
 	imgPath2 := "../data/image1-b.jpg"
@@ -48,24 +49,40 @@ func main() {
 			mask := gocv.NewMat()
 			gocv.MatchTemplate(img2, tmp, &result, gocv.TmSqdiff, mask)
 			mask.Close()
-			minVal, maxVal, minLoc, maxLoc := gocv.MinMaxLoc(result)
-
-			fmt.Println(minVal, maxVal)
-			fmt.Println(minLoc.X, minLoc.Y, maxLoc.X, maxLoc.Y)
-			fmt.Println(i*col, j*row, (i+1)*col, (j+1)*row)
-			fmt.Println("+++++++++++++++++++++++")
+			minVal, _, minLoc, _ := gocv.MinMaxLoc(result)
 
 			if minVal < minPos {
-				posX = minLoc.X
-				// rect := image.Rect(i*col, j*row, (i+1)*col, (j+1)*row)
-				// gocv.Rectangle(&img1, rect, redColor, 1)
+				bx = minLoc.X
+				by = minLoc.Y
+				ax = i * col
+				ay = j * row
 			}
 		}
 	}
-	fmt.Println(posX)
-	for {
-		window1.IMShow(img1)
-		window2.IMShow(img2)
-		window1.WaitKey(1)
+
+	result := gocv.NewMatWithSize(ay+img2.Rows()-by, ax+img2.Cols()-bx, gocv.MatTypeCV8UC3)
+
+	// attach image1 to result
+	roi := image.Rectangle{
+		Min: image.Point{X: 0, Y: 0},
+		Max: image.Point{X: img1.Size()[1], Y: img1.Size()[0]},
 	}
+	resultRoi := result.Region(roi)
+	gocv.Resize(img1, &resultRoi, roi.Size(), 0, 0, gocv.InterpolationLinear)
+
+	// attach image2 to result
+	roi = image.Rectangle{
+		Min: image.Point{X: ax - bx, Y: ay - by},
+		Max: image.Point{X: result.Size()[1], Y: result.Size()[0]},
+	}
+	defer result.Close()
+	resultRoi = result.Region(roi)
+	defer resultRoi.Close()
+	gocv.Resize(img2, &resultRoi, roi.Size(), 0, 0, gocv.InterpolationLinear)
+
+	window1.IMShow(img1)
+	window2.IMShow(img2)
+	windowResult.IMShow(result)
+	window1.WaitKey(0)
+
 }
