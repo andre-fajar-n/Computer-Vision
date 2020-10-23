@@ -3,13 +3,10 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 
 	"gocv.io/x/gocv"
 )
-
-// func findBlob(img Mat) int64 {
-
-// }
 
 func main() {
 	// declare window
@@ -40,6 +37,8 @@ func main() {
 	// indicator when video just open
 	var isFirst bool = true
 
+	var human, motorcycle int
+
 	// show the video frame by frame
 	for {
 		// to break terminal when video is end
@@ -68,7 +67,39 @@ func main() {
 		gocv.Erode(result, &result, erodeTemplate)
 		gocv.Dilate(result, &result, dilateTemplate)
 
-		originalWindow.IMShow(result)
-		originalWindow.WaitKey(25) // set 50 to normal video
+		moments := gocv.Moments(result, true)
+		point := image.Point{
+			X: int(moments["m10"] / moments["m00"]),
+			Y: int(moments["m01"] / moments["m00"]),
+		}
+
+		// create dot (center of object)
+		gocv.Circle(&img, point, 5, color.RGBA{R: 255}, -1)
+
+		// count blob and save it to variable
+		contours := gocv.FindContours(result, gocv.RetrievalList, gocv.ChainApproxSimple)
+		var pixels []int
+		for _, contour := range contours {
+			if len(contour) > 75 {
+				pixels = append(pixels, len(contour))
+			}
+		}
+
+		for _, pixel := range pixels {
+			// check the blob is already passed centerline or not yet
+			if point.X > 293 && point.X < 310 {
+				// check blob is motorcycle or human
+				if pixel > 75 && pixel <= 110 {
+					human++
+				} else if pixel > 110 && pixel <= 150 {
+					motorcycle++
+				}
+			}
+		}
+
+		fmt.Println("human:", human, "motorcycle:", motorcycle)
+
+		originalWindow.IMShow(img)
+		originalWindow.WaitKey(1) // set 50 to normal video
 	}
 }
