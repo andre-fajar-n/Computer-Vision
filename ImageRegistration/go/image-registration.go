@@ -11,6 +11,7 @@ import (
 
 var redColor = color.RGBA{R: 255}
 var bx, by, ax, ay int
+var segment int = 5
 
 const minPos = 9.9e+25
 
@@ -33,15 +34,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	segment := 4
-
 	col := img1.Cols() / segment
 	row := img1.Rows() / segment
 
 	for i := 0; i < segment; i++ {
 		for j := 0; j < segment; j++ {
+			// create rectangle
+			rect := image.Rect(i*col, j*row, (i+1)*col, (j+1)*row)
+
 			// crop image
-			tmp := img1.Region(image.Rect(i*col, j*row, (i+1)*col, (j+1)*row))
+			tmp := img1.Region(rect)
 
 			result := img1.Clone()
 
@@ -60,6 +62,8 @@ func main() {
 		}
 	}
 
+	gocv.Rectangle(&img1, image.Rect(ax, ay, ax+col, ay+row), redColor, 1)
+	gocv.Rectangle(&img2, image.Rect(bx, by, bx+col, by+row), redColor, 1)
 	result := gocv.NewMatWithSize(ay+img2.Rows()-by, ax+img2.Cols()-bx, gocv.MatTypeCV8UC3)
 
 	// attach image1 to result
@@ -83,6 +87,5 @@ func main() {
 	window1.IMShow(img1)
 	window2.IMShow(img2)
 	windowResult.IMShow(result)
-	window1.WaitKey(0)
-
+	windowResult.WaitKey(0)
 }
