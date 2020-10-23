@@ -29,8 +29,14 @@ func main() {
 	// create template for erode and dilate
 	// erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: -1, Y: -1})
 
-	// variable to save gray image
+	// create variable image
 	gray := gocv.NewMat()
+	result := gocv.NewMat()
+	before := gocv.NewMat()
+	after := gocv.NewMat()
+
+	// indicator when video just open
+	var isFirst bool = true
 
 	// show the video frame by frame
 	for {
@@ -42,7 +48,22 @@ func main() {
 		// convert to gray image
 		gocv.CvtColor(img, &gray, gocv.ColorBGRToGray)
 
-		originalWindow.IMShow(gray)
+		// save image before and now
+		after = gray.Clone()
+		if isFirst {
+			before = after.Clone()
+			result = after.Clone()
+			isFirst = false
+		}
+
+		// subtract before and after
+		gocv.AbsDiff(after, before, &result)
+
+		//
+		before = after.Clone()
+		gocv.Threshold(result, &result, 45, 255, gocv.ThresholdBinary)
+
+		originalWindow.IMShow(result)
 		originalWindow.WaitKey(1)
 	}
 }
