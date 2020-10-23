@@ -26,6 +26,12 @@ func main() {
 	img := gocv.NewMat()
 	defer img.Close()
 
+	// create template for erode and dilate
+	// erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: -1, Y: -1})
+
+	// variable to save gray image
+	gray := gocv.NewMat()
+
 	// show the video frame by frame
 	for {
 		// to break terminal when video is end
@@ -33,7 +39,10 @@ func main() {
 			break
 		}
 
-		originalWindow.IMShow(img)
-		originalWindow.WaitKey(50)
+		// convert to gray image
+		gocv.CvtColor(img, &gray, gocv.ColorBGRToGray)
+
+		originalWindow.IMShow(gray)
+		originalWindow.WaitKey(1)
 	}
 }
