@@ -8,9 +8,21 @@ import (
 	"gocv.io/x/gocv"
 )
 
+var (
+	gray       = gocv.NewMat()
+	result     = gocv.NewMat()
+	before     = gocv.NewMat()
+	after      = gocv.NewMat()
+	isFirst    = true
+	human      = 0
+	motorcycle = 0
+)
+
 func main() {
 	// declare window
 	originalWindow := gocv.NewWindow("original")
+
+	red := color.RGBA{R: 255}
 
 	// get video file
 	videoPath := "../data/MV_v2.avi"
@@ -27,17 +39,6 @@ func main() {
 	// create template for erode and dilate
 	erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 3, Y: 3})
 	dilateTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 35, Y: 35})
-
-	// create variable image
-	gray := gocv.NewMat()
-	result := gocv.NewMat()
-	before := gocv.NewMat()
-	after := gocv.NewMat()
-
-	// indicator when video just open
-	var isFirst bool = true
-
-	var human, motorcycle int
 
 	// show the video frame by frame
 	for {
@@ -74,14 +75,15 @@ func main() {
 		}
 
 		// create dot (center of object)
-		gocv.Circle(&img, point, 5, color.RGBA{R: 255}, -1)
+		gocv.Circle(&img, point, 5, red, -1)
 
 		// count blob and save it to variable
 		contours := gocv.FindContours(result, gocv.RetrievalList, gocv.ChainApproxSimple)
 		var pixels []int
-		for _, contour := range contours {
+		for idx, contour := range contours {
 			if len(contour) > 75 {
 				pixels = append(pixels, len(contour))
+				gocv.DrawContours(&img, contours, idx, red, 2)
 			}
 		}
 
@@ -97,9 +99,17 @@ func main() {
 			}
 		}
 
-		fmt.Println("human:", human, "motorcycle:", motorcycle)
+		text := fmt.Sprintf("human: %d, motorcycle: %d", human, motorcycle)
+
+		// add centerline
+		centerLine := img.Cols() / 2
+		gocv.Line(&img, image.Point{X: centerLine}, image.Point{X: centerLine, Y: img.Rows()}, red, 2)
+
+		// add text
+		fmt.Println(text)
+		gocv.PutText(&img, text, image.Point{X: 10, Y: img.Rows() - 50}, gocv.FontHersheySimplex, 1.1, red, 3)
 
 		originalWindow.IMShow(img)
-		originalWindow.WaitKey(1) // set 50 to normal video
+		originalWindow.WaitKey(10) // set 50 to normal video
 	}
 }
