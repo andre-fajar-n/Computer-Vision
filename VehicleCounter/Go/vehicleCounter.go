@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 
 	"gocv.io/x/gocv"
 )
@@ -27,7 +28,8 @@ func main() {
 	defer img.Close()
 
 	// create template for erode and dilate
-	// erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: -1, Y: -1})
+	erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 3, Y: 3})
+	dilateTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 35, Y: 35})
 
 	// create variable image
 	gray := gocv.NewMat()
@@ -59,11 +61,14 @@ func main() {
 		// subtract before and after
 		gocv.AbsDiff(after, before, &result)
 
-		//
+		// copy after to before
 		before = after.Clone()
+
 		gocv.Threshold(result, &result, 45, 255, gocv.ThresholdBinary)
+		gocv.Erode(result, &result, erodeTemplate)
+		gocv.Dilate(result, &result, dilateTemplate)
 
 		originalWindow.IMShow(result)
-		originalWindow.WaitKey(1)
+		originalWindow.WaitKey(25) // set 50 to normal video
 	}
 }
