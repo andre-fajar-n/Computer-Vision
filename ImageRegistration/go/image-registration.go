@@ -84,6 +84,8 @@ func main() {
 	defer resultRoi.Close()
 	gocv.Resize(img2, &resultRoi, roi.Size(), 0, 0, gocv.InterpolationLinear)
 
+	gocv.IMWrite("../data/result.png", result)
+
 	window1.IMShow(img1)
 	window2.IMShow(img2)
 	windowResult.IMShow(result)
