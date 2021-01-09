@@ -40,6 +40,18 @@ func main() {
 	erodeTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 3, Y: 3})
 	dilateTemplate := gocv.GetStructuringElement(gocv.MorphRect, image.Point{X: 35, Y: 35})
 
+	if ok := video.Read(&img); !ok {
+		fmt.Printf("cannot read file")
+	}
+	// preparation to save result video
+	saveFile := "../data/result.avi"
+	writer, err := gocv.VideoWriterFile(saveFile, "MJPG", 50, img.Cols()*2, img.Rows()*2, true)
+	if err != nil {
+		fmt.Printf("error opening video writer device: %v\n", err)
+		return
+	}
+	defer writer.Close()
+
 	// show the video frame by frame
 	for {
 		// to break terminal when video is end
@@ -109,7 +121,8 @@ func main() {
 		fmt.Println(text)
 		gocv.PutText(&img, text, image.Point{X: 10, Y: img.Rows() - 50}, gocv.FontHersheySimplex, 1.1, red, 3)
 
+		writer.Write(img)
 		originalWindow.IMShow(img)
-		originalWindow.WaitKey(10) // set 50 to normal video
+		originalWindow.WaitKey(50) // set 50 to normal video
 	}
 }
