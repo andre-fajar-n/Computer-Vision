@@ -1,1 +1,0 @@
-# Speedometer of a Moving Object

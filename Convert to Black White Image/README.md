@@ -1,1 +1,0 @@
-# Convert to Black White Image
